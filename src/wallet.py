@@ -5,7 +5,16 @@ import base64
 from ecdsa import SigningKey, SECP256k1, VerifyingKey, BadSignatureError
 
 
-CODE_FORMAT = 'utf-8'
+CODE_FORMAT = "utf-8"
+
+
+def verify_sign(pubkey, msg, signature):
+    """
+    verifying the signature is authentic.
+    """
+    verifier = VerifyingKey.from_pem(pubkey)
+    hash = hashlib.sha256(msg.encode(CODE_FORMAT))
+    return verifier.verify(binascii.unhexlify(signature), hash.digest())
 
 
 class Wallet:
@@ -40,25 +49,15 @@ class Wallet:
         return binascii.hexlify(self._private_key.sign(hash.digest()))
 
 
-def verify_sign(pubkey, msg, signature):
-    """
-    verifying the signature is authentic.
-    """
-    verifier = VerifyingKey.from_pem(pubkey)
-    hash = hashlib.sha256(msg.encode(CODE_FORMAT))
-    return verifier.verify(binascii.unhexlify(signature), hash.digest())
-
-
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     # test the wallet
     w = Wallet()
-    print(f'wallet address: {w.address}')
-    print(f'wallet pubkey: {w.pubkey}')
+    print(f"wallet address: {w.address}")
+    print(f"wallet pubkey: {w.pubkey}")
 
-    test_data = 'this is a test!'
+    test_data = "this is a test!"
     sig = w.sign(test_data)
-    print(f'digital signatrue: {sig}')
+    print(f"digital signatrue: {sig}")
 
     # verifying wallet
-    print(f'verify signature: {verify_sign(w.pubkey, test_data, sig)}')
+    print(f"verify signature: {verify_sign(w.pubkey, test_data, sig)}")
