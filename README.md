@@ -14,12 +14,7 @@ conda activate blockchain101
 pip install -r requirements.txt
 ```
 
-test blockchain
-
-```
-cd src
-python test.py
-```
+test blockchain `python test_blockchain.py`
 
 test p2pnetwork `test_p2pnetwork.ipynb`
 
