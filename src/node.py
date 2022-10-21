@@ -3,14 +3,14 @@ import socket
 import threading
 import pickle
 
-from src.blocks import CODE_FORMAT, Block, BlockChain, Transaction
-from src.wallet import Wallet, verify_sign
-from src.concensus import ProofOfWork
+from .blocks import CODE_FORMAT, Block, BlockChain, Transaction
+from .wallet import Wallet, verify_sign
+from .concensus import ProofOfWork
 
 
 NODE_LST = []
 DIFFICULTY = 5
-PER_BYTE = 16
+PER_BYTE = 64
 
 
 class Node(threading.Thread):
@@ -115,8 +115,8 @@ class Node(threading.Thread):
         update blockchain to very node.
         """
         for node in NODE_LST:
-            host = node.host
-            port = node.port
+            host = node['host']
+            port = node['port']
             if host==self.host and port==self.port: # the node is self.
                 return
             print(f"broadcasting to node {self.name}")
@@ -141,9 +141,9 @@ class Node(threading.Thread):
 
         else:
             any_node = NODE_LST[0] # could be anynode, not just the first. cuz every node should have the same blockchain.
-            host = any_node.host
-            port = any_node.port
-            name = any_node.name
+            host = any_node['host']
+            port = any_node['port']
+            name = any_node['name']
             print(f"{self.name} sends init request to {name}")
             my_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             my_socket.connect((host, port))
@@ -167,15 +167,16 @@ class Node(threading.Thread):
         A node could also submit a transaction and broadcast the transaction.
         """
         for node in NODE_LST:
-            host = node.host
-            port = node.port
+            host = node['host']
+            port = node['port']
             if host==self.host and port==self.port:
-                return
-            print(f"broadcasting to node {self.name}")
-            my_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            my_socket.connect((host, port))
-            my_socket.send(pickle.dumps(transaction))
-            my_socket.close()
+                print("ignore itself")
+            else:
+                print(f"broadcasting to node {self.name}")
+                my_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                my_socket.connect((host, port))
+                my_socket.send(pickle.dumps(transaction))
+                my_socket.close()
 
     def get_balance(self):
         balance = 0
@@ -196,33 +197,32 @@ class Node(threading.Thread):
             print("\n")
 
 
+# # Sample codes to test the nodes
+# # run the codes in jupyter notebook
+# node1 = Node('node1', 8000)
+# node1.start() # thread start()
 
+# node1.print_blockchain()
+# node2 = Node("node2", 8001)
+# node2.start()
+# node2.print_blockchain()
 
-if __name__ == "__main__":
-    node1 = Node('node1', 8000)
-    node1.run()
+# node1.get_balance()
+# node2.get_balance()
 
-    node1.print_blockchain()
-    node2 = Node("node2", 8001)
-    node2.run()
-    node2.print_blockchain()
+# print("node1 sends node2 0.3 coins...")
+# new_transaction = Transaction(
+# sender=node1.wallet.address,
+# recipient=node2.wallet.address,
+# amount=0.3
+# )
+# sig = node1.wallet.sign(str(new_transaction))
+# new_transaction.set_sign(sig, node1.wallet.pubkey)
 
-    node1.get_balance()
-    node2.get_balance()
+# node1.submit_transaction(new_transaction)
 
-    print("node1 sends node2 0.3 coins...")
-    new_transaction = Transaction(
-    sender=node1.wallet.address,
-    recipient=node2.wallet.address,
-    amount=0.3
-    )
-    sig = node1.wallet.sign(str(new_transaction))
-    new_transaction.set_sign(sig, node1.wallet.pubkey)
+# node1.print_blockchain()
+# node2.print_blockchain()
 
-    node1.submit_transaction(new_transaction)
-
-    node1.print_blockchain()
-    node2.print_blockchain()
-
-    node1.get_balance()
-    node2.get_balance()
+# node1.get_balance()
+# node2.get_balance()

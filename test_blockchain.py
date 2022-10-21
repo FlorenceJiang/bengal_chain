@@ -29,7 +29,7 @@ if __name__ == '__main__':
     new_transaction = Transaction(
         sender=usr1.address,
         recipient=usr2.address,
-        amount=0.3
+        amount=0.03
     )
     sig = usr2.sign(str(new_transaction))
     new_transaction.set_sign(sig, usr2.pubkey)
